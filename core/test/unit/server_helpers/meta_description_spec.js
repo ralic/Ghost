@@ -1,28 +1,19 @@
-var should         = require('should'),
-    hbs            = require('express-hbs'),
-    utils          = require('./utils'),
-    configUtils    = require('../../utils/configUtils'),
+var should = require('should'),
+    sinon = require('sinon'),
+    configUtils = require('../../utils/configUtils'),
+    helpers = require('../../../server/helpers'),
+    settingsCache = require('../../../server/settings/cache'),
 
-// Stuff we are testing
-    handlebars     = hbs.handlebars,
-    helpers        = require('../../../server/helpers');
+    sandbox = sinon.sandbox.create();
 
 describe('{{meta_description}} helper', function () {
     before(function () {
-        utils.loadHelpers();
-        configUtils.set({
-            theme: {
-                description: 'Just a blogging platform.'
-            }
-        });
+        sandbox.stub(settingsCache, 'get').returns('Just a blogging platform.');
     });
 
     after(function () {
         configUtils.restore();
-    });
-
-    it('has loaded meta_description helper', function () {
-        should.exist(handlebars.helpers.meta_description);
+        sandbox.restore();
     });
 
     it('returns correct blog description', function () {

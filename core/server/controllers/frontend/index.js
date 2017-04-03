@@ -4,8 +4,9 @@
 
 /*global require, module */
 
-var api         = require('../../api'),
-    config      = require('../../config'),
+var debug = require('debug')('ghost:channels:single'),
+    api         = require('../../api'),
+    utils       = require('../../utils'),
     filters     = require('../../filters'),
     templates   = require('./templates'),
     handleError = require('./error'),
@@ -23,11 +24,13 @@ var api         = require('../../api'),
 * Returns a function that takes the post to be rendered.
 */
 function renderPost(req, res) {
+    debug('renderPost called');
     return function renderPost(post) {
-        var view = templates.single(req.app.get('activeTheme'), post),
+        var view = templates.single(post),
             response = formatResponse.single(post);
 
         setResponseContext(req, res, response);
+        debug('Rendering view: ' + view);
         res.render(view, response);
     };
 }
@@ -48,7 +51,7 @@ frontendControllers = {
             }
 
             if (post.status === 'published') {
-                return res.redirect(301, config.urlFor('post', {post: post}));
+                return res.redirect(301, utils.url.urlFor('post', {post: post}));
             }
 
             setRequestIsSecure(req, post);
@@ -66,14 +69,14 @@ frontendControllers = {
                 return next();
             }
 
-            // CASE: we only support /:slug format for pages
-            if (post.page && post.url !== req.path) {
+            // CASE: postlookup can detect options for example /edit, unknown options get ignored and end in 404
+            if (lookup.isUnknownOption) {
                 return next();
             }
 
             // CASE: last param is of url is /edit, redirect to admin
             if (lookup.isEditURL) {
-                return res.redirect(config.paths.subdir + '/ghost/editor/' + post.id + '/');
+                return res.redirect(utils.url.urlJoin(utils.url.urlFor('admin'), 'editor', post.id, '/'));
             }
 
             // CASE: permalink is not valid anymore, we redirect him permanently to the correct one

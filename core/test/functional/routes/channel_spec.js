@@ -1,16 +1,18 @@
-
 // # Channel Route Tests
 // As it stands, these tests depend on the database, and as such are integration tests.
 // These tests are here to cover the headers sent with requests and high-level redirects that can't be
 // tested with the unit tests
-var request    = require('supertest'),
-    should     = require('should'),
-    cheerio    = require('cheerio'),
-
-    testUtils  = require('../../utils'),
-    ghost      = require('../../../../core');
+var should = require('should'),
+    supertest = require('supertest'),
+    testUtils = require('../../utils'),
+    cheerio = require('cheerio'),
+    config = require('../../../../core/server/config'),
+    ghost = testUtils.startGhost,
+    request;
 
 describe('Channel Routes', function () {
+    var ghostServer;
+
     function doEnd(done) {
         return function (err, res) {
             if (err) {
@@ -27,10 +29,11 @@ describe('Channel Routes', function () {
     }
 
     before(function (done) {
-        ghost().then(function (ghostServer) {
-            // Setup the request object with the ghost express app
-            request = request(ghostServer.rootApp);
-
+        ghost().then(function (_ghostServer) {
+            ghostServer = _ghostServer;
+            return ghostServer.start();
+        }).then(function () {
+            request = supertest.agent(config.get('url'));
             done();
         }).catch(function (e) {
             console.log('Ghost Error: ', e);
@@ -40,6 +43,10 @@ describe('Channel Routes', function () {
     });
 
     after(testUtils.teardown);
+
+    after(function () {
+        return ghostServer.stop();
+    });
 
     describe('Index', function () {
         it('should respond with html', function (done) {
@@ -79,6 +86,8 @@ describe('Channel Routes', function () {
         });
 
         describe('RSS', function () {
+            before(testUtils.teardown);
+
             before(function (done) {
                 testUtils.initData().then(function () {
                     return testUtils.fixtures.overrideOwnerUser();
@@ -276,6 +285,8 @@ describe('Channel Routes', function () {
         });
 
         describe('Paged', function () {
+            before(testUtils.teardown);
+
             // Add enough posts to trigger pages
             before(function (done) {
                 testUtils.initData().then(function () {
@@ -369,7 +380,7 @@ describe('Channel Routes', function () {
 
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
-                    .expect('Location', '/ghost/settings/tags/getting-started/')
+                    .expect('Location', '/ghost/#/settings/tags/getting-started/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));
@@ -538,7 +549,7 @@ describe('Channel Routes', function () {
 
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
-                    .expect('Location', '/ghost/team/ghost-owner/')
+                    .expect('Location', '/ghost/#/team/ghost-owner/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(302)
                     .end(doEnd(done));

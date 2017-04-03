@@ -1,24 +1,24 @@
-var should    = require('should'),
-    sinon     = require('sinon'),
-    Promise   = require('bluebird'),
-    _         = require('lodash'),
+var should = require('should'),
+    sinon = require('sinon'),
+    Promise = require('bluebird'),
+    _ = require('lodash'),
     testUtils = require('../utils'),
-    moment    = require('moment'),
-    path      = require('path'),
-    errors    = require('../../server/errors'),
+    moment = require('moment'),
+    path = require('path'),
+    errors = require('../../server/errors'),
 
     // Stuff we are testing
-    ImportManager   = require('../../server/data/importer'),
-    JSONHandler     = require('../../server/data/importer/handlers/json'),
-    ImageHandler    = require('../../server/data/importer/handlers/image'),
+    ImportManager = require('../../server/data/importer'),
+    JSONHandler = require('../../server/data/importer/handlers/json'),
+    ImageHandler = require('../../server/data/importer/handlers/image'),
     MarkdownHandler = require('../../server/data/importer/handlers/markdown'),
-    DataImporter    = require('../../server/data/importer/importers/data'),
-    ImageImporter   = require('../../server/data/importer/importers/image'),
+    DataImporter = require('../../server/data/importer/importers/data'),
+    ImageImporter = require('../../server/data/importer/importers/image'),
 
-    storage         = require('../../server/storage'),
+    storage = require('../../server/storage'),
 
-    configUtils     = require('../utils/configUtils'),
-    sandbox         = sinon.sandbox.create();
+    configUtils = require('../utils/configUtils'),
+    sandbox = sinon.sandbox.create();
 
 describe('Importer', function () {
     afterEach(function () {
@@ -45,12 +45,12 @@ describe('Importer', function () {
         });
 
         it('gets the correct types', function () {
-            ImportManager.getTypes().should.be.instanceof(Array).and.have.lengthOf(10);
-            ImportManager.getTypes().should.containEql('application/octet-stream');
-            ImportManager.getTypes().should.containEql('application/json');
-            ImportManager.getTypes().should.containEql('application/zip');
-            ImportManager.getTypes().should.containEql('application/x-zip-compressed');
-            ImportManager.getTypes().should.containEql('text/plain');
+            ImportManager.getContentTypes().should.be.instanceof(Array).and.have.lengthOf(10);
+            ImportManager.getContentTypes().should.containEql('application/octet-stream');
+            ImportManager.getContentTypes().should.containEql('application/json');
+            ImportManager.getContentTypes().should.containEql('application/zip');
+            ImportManager.getContentTypes().should.containEql('application/x-zip-compressed');
+            ImportManager.getContentTypes().should.containEql('text/plain');
         });
 
         it('gets the correct directories', function () {
@@ -305,9 +305,9 @@ describe('Importer', function () {
             JSONHandler.type.should.eql('data');
             JSONHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(1);
             JSONHandler.extensions.should.containEql('.json');
-            JSONHandler.types.should.be.instanceof(Array).and.have.lengthOf(2);
-            JSONHandler.types.should.containEql('application/octet-stream');
-            JSONHandler.types.should.containEql('application/json');
+            JSONHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            JSONHandler.contentTypes.should.containEql('application/octet-stream');
+            JSONHandler.contentTypes.should.containEql('application/json');
             JSONHandler.loadFile.should.be.instanceof(Function);
         });
 
@@ -350,11 +350,11 @@ describe('Importer', function () {
             ImageHandler.extensions.should.containEql('.png');
             ImageHandler.extensions.should.containEql('.svg');
             ImageHandler.extensions.should.containEql('.svgz');
-            ImageHandler.types.should.be.instanceof(Array).and.have.lengthOf(4);
-            ImageHandler.types.should.containEql('image/jpeg');
-            ImageHandler.types.should.containEql('image/png');
-            ImageHandler.types.should.containEql('image/gif');
-            ImageHandler.types.should.containEql('image/svg+xml');
+            ImageHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(4);
+            ImageHandler.contentTypes.should.containEql('image/jpeg');
+            ImageHandler.contentTypes.should.containEql('image/png');
+            ImageHandler.contentTypes.should.containEql('image/gif');
+            ImageHandler.contentTypes.should.containEql('image/svg+xml');
             ImageHandler.loadFile.should.be.instanceof(Function);
         });
 
@@ -445,18 +445,18 @@ describe('Importer', function () {
                     path: '/my/test/testing.png',
                     name: 'testing.png'
                 },
-                {
-                    path: '/my/test/photo/kitten.jpg',
-                    name: 'photo/kitten.jpg'
-                },
-                {
-                    path: '/my/test/content/images/animated/bunny.gif',
-                    name: 'content/images/animated/bunny.gif'
-                },
-                {
-                    path: '/my/test/images/puppy.jpg',
-                    name: 'images/puppy.jpg'
-                }],
+                    {
+                        path: '/my/test/photo/kitten.jpg',
+                        name: 'photo/kitten.jpg'
+                    },
+                    {
+                        path: '/my/test/content/images/animated/bunny.gif',
+                        name: 'content/images/animated/bunny.gif'
+                    },
+                    {
+                        path: '/my/test/images/puppy.jpg',
+                        name: 'images/puppy.jpg'
+                    }],
                 storeSpy = sandbox.spy(store, 'getUniqueFileName'),
                 storageSpy = sandbox.spy(storage, 'getStorage');
 
@@ -487,9 +487,9 @@ describe('Importer', function () {
             MarkdownHandler.extensions.should.be.instanceof(Array).and.have.lengthOf(2);
             MarkdownHandler.extensions.should.containEql('.md');
             MarkdownHandler.extensions.should.containEql('.markdown');
-            MarkdownHandler.types.should.be.instanceof(Array).and.have.lengthOf(2);
-            MarkdownHandler.types.should.containEql('application/octet-stream');
-            MarkdownHandler.types.should.containEql('text/plain');
+            MarkdownHandler.contentTypes.should.be.instanceof(Array).and.have.lengthOf(2);
+            MarkdownHandler.contentTypes.should.containEql('application/octet-stream');
+            MarkdownHandler.contentTypes.should.containEql('text/plain');
             MarkdownHandler.loadFile.should.be.instanceof(Function);
         });
 
@@ -587,15 +587,15 @@ describe('Importer', function () {
 
         it('can import multiple files', function (done) {
             var files = [{
-                    path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
-                    name: 'deleted-2014-12-19-test-1.md'
-                }, {
-                    path: testUtils.fixtures.getImportFixturePath('published-2014-12-19-test-1.md'),
-                    name: 'published-2014-12-19-test-1.md'
-                }, {
-                    path: testUtils.fixtures.getImportFixturePath('draft-2014-12-19-test-3.md'),
-                    name: 'draft-2014-12-19-test-3.md'
-                }];
+                path: testUtils.fixtures.getImportFixturePath('deleted-2014-12-19-test-1.md'),
+                name: 'deleted-2014-12-19-test-1.md'
+            }, {
+                path: testUtils.fixtures.getImportFixturePath('published-2014-12-19-test-1.md'),
+                name: 'published-2014-12-19-test-1.md'
+            }, {
+                path: testUtils.fixtures.getImportFixturePath('draft-2014-12-19-test-3.md'),
+                name: 'draft-2014-12-19-test-3.md'
+            }];
 
             MarkdownHandler.loadFile(files).then(function (result) {
                 // deleted-2014-12-19-test-1.md
@@ -648,7 +648,7 @@ describe('Importer', function () {
 
         it('does import the data correctly', function () {
             var inputData = require('../utils/fixtures/import/import-data-1.json'),
-               importerSpy = sandbox.stub(importer, 'doImport').returns(Promise.resolve());
+                importerSpy = sandbox.stub(importer, 'doImport').returns(Promise.resolve());
 
             DataImporter.doImport(inputData.data).then(function () {
                 importerSpy.calledOnce.should.be.true();
@@ -698,7 +698,7 @@ describe('Importer', function () {
                 storageApi = {
                     save: sandbox.stub().returns(Promise.resolve())
                 },
-                storageSpy  = sandbox.stub(storage, 'getStorage', function () {
+                storageSpy = sandbox.stub(storage, 'getStorage', function () {
                     return storageApi;
                 });
 

@@ -1,12 +1,13 @@
-var config = require(__dirname + '/../../../server/config'),
+var should = require('should'),
+    sinon = require('sinon'),
+    config = require(__dirname + '/../../../server/config'),
     moment = require('moment'),
     _ = require('lodash'),
-    should = require('should'),
     express = require('express'),
     bodyParser = require('body-parser'),
     http = require('http'),
-    sinon = require('sinon'),
-    SchedulingDefault = require(config.paths.corePath + '/server/scheduling/SchedulingDefault'),
+    SchedulingDefault = require(config.get('paths').corePath + '/server/scheduling/SchedulingDefault'),
+
     sandbox = sinon.sandbox.create();
 
 describe('Scheduling Default Adapter', function () {
@@ -149,6 +150,11 @@ describe('Scheduling Default Adapter', function () {
                 pinged.should.eql(2);
                 done();
             })();
+        });
+
+        it('delete job (unschedule): time is null', function () {
+            scope.adapter._deleteJob({time: null, url: '/test'});
+            Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
         });
 
         it('pingUrl (PUT)', function (done) {

@@ -1,5 +1,5 @@
-var getOgType = require('../../../server/data/meta/og_type'),
-    should = require('should');
+var should = require('should'),
+    getOgType = require('../../../server/data/meta/og_type');
 
 describe('getOgType', function () {
     it('should return og type profile if context is type author', function () {
@@ -12,6 +12,13 @@ describe('getOgType', function () {
     it('should return og type article if context is type post', function () {
         var ogType = getOgType({
             context: ['post']
+        });
+        should.equal(ogType, 'article');
+    });
+
+    it('should return og type article if context is type amp', function () {
+        var ogType = getOgType({
+            context: ['amp', 'post']
         });
         should.equal(ogType, 'article');
     });
